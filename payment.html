@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Complete Your Payment</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f7fb; }
+        .pay-card { background: white; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .btn-pay { background: #2563eb; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="pay-card">
+        <h2>Admission & Monthly Fees</h2>
+        <p>Total Amount to Pay: <strong>₹5000</strong></p>
+        <p>(Includes Admission + 1st Month Fees)</p>
+        <form action="https://api.razorpay.com/v1/checkout/embedded" method="POST">
+            <script
+                src="https://checkout.razorpay.com/v1/checkout.js"
+                data-key="YOUR_RAZORPAY_KEY_ID"
+                data-amount="750"
+                data-currency="INR"
+                data-name="Bright Future Coaching"
+                data-description="Admission Fees"
+                data-prefill.name="Student"
+                data-theme.color="#2563eb"
+            ></script>
+            <input type="hidden" name="shopping_order_id" value="order_xyz">
+        </form>
+    </div>
+</body>
+</html>
