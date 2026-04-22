@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Result - Achieve Academy</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; text-align: center; padding: 20px; }
+  .container { background: white; max-width: 400px; margin: auto; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+  h2 { color: #1e40af; margin-bottom: 20px; }
+  input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; }
+  button { width: 100%; padding: 12px; background: #1e40af; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+  button:hover { background: #1e3a8a; }
+  #resultBox { margin-top: 40px; }
+  .marksheet { max-width: 600px; margin: 20px auto; background: white; border: 8px double #1e40af; padding: 30px; text-align: left; box-sizing: border-box; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+  th { background-color: #f1f5f9; }
+  .fail-text { color: red; font-weight: bold; }
+  .pass-text { color: #1e40af; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Achieve Academy</h2>
+  <input type="text" id="nameInput" placeholder="Student Full Name">
+  <input type="text" id="rollInput" placeholder="Roll Number">
+  <button onclick="getResult()">Get Result</button>
+</div>
+
+<div id="resultBox"></div>
+
+<script>
+function getResult() {
+  const nameVal = document.getElementById("nameInput").value.trim();
+  const rollVal = document.getElementById("rollInput").value.trim();
+  const resBox = document.getElementById("resultBox");
+
+  if(!nameVal || !rollVal) {
+    alert("Please enter both Name and Roll number.");
+    return;
+  }
+
+  resBox.innerHTML = "<p>Fetching record, please wait...</p>";
+
+  fetch("https://sheetdb.io/api/v1/xisitsxchstg2?sheet=Sheet2")
+  .then(res => res.json())
+  .then(data => {
+    const student = data.find(s =>
+      s.Name.toString().toLowerCase() === nameVal.toLowerCase() &&
+      s.Roll.toString() === rollVal
+    );
+
+    if(!student) {
+      resBox.innerHTML = "<h3 style='color:red;'>❌ Record Not Found!</h3>";
+      return;
+    }
+
+    const m = Number(student.Maths);
+    const s = Number(student.Science);
+    const e = Number(student.English);
+    const total = m + s + e;
+    const percent = ((total / 300) * 100).toFixed(2);
+
+    // --- Division Logic ---
+    let division = "";
+    let statusClass = "pass-text";
+
+    if (m < 33 || s < 33 || e < 33) {
+        division = "FAILED (Back in Subject)";
+        statusClass = "fail-text";
+    } else if (percent >= 60) {
+        division = "First Division";
+    } else if (percent >= 45) {
+        division = "Second Division";
+    } else if (percent >= 33) {
+        division = "Third Division";
+    } else {
+        division = "FAILED";
+        statusClass = "fail-text";
+    }
+
+    resBox.innerHTML = `
+      <div class="marksheet">
+        <h1 style="text-align:center; color:#1e40af; margin-bottom:5px;">ACHIEVE ACADEMY</h1>
+        <h3 style="text-align:center; margin-top:0; color:#475569;">OFFICIAL STATEMENT OF MARKS</h3>
+        <hr>
+        <div style="margin: 20px 0;">
+          <p><b>Student Name:</b> ${student.Name}</p>
+          <p><b>Roll Number:</b> ${student.Roll}</p>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Subject</th><th>Max Marks</th><th>Pass Marks</th><th>Marks Obtained</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Mathematics</td><td>100</td><td>33</td><td>${m}</td></tr>
+            <tr><td>Science</td><td>100</td><td>33</td><td>${s}</td></tr>
+            <tr><td>English</td><td>100</td><td>33</td><td>${e}</td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:20px;">
+          <p><b>Total Marks:</b> ${total}/300</p>
+          <p><b>Percentage:</b> ${percent}%</p>
+          <p><b>Final Result:</b> <span class="${statusClass}">${division}</span></p>
+        </div>
+
+        <div style="margin-top:60px; display:flex; justify-content:space-between;">
+          <p style="border-top:1px solid #000; width:150px; text-align:center;">Class Teacher</p>
+          <p style="border-top:1px solid #000; width:150px; text-align:center;">Principal Signature</p>
+        </div>
+
+        <button onclick="window.print()" style="background:#475569; width:auto; padding:8px 15px; margin-top:20px;">Print / Save PDF</button>
+      </div>
+    `;
+  })
+  .catch(err => {
+    resBox.innerHTML = "<p style='color:red;'>Network error. Please try again.</p>";
+  });
+}
+</script>
+
+</body>
+</html>
