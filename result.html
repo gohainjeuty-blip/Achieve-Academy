@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Result</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; text-align: center; padding: 20px; }
+  .container { background: white; max-width: 400px; margin: auto; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+  h2 { color: #1e40af; margin-bottom: 20px; }
+  input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; }
+  button { width: 100%; padding: 12px; background: #1e40af; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
+  button:hover { background: #1e3a8a; }
+  #resultBox { margin-top: 40px; }
+  .marksheet { max-width: 600px; margin: auto; background: white; border: 8px double #1e40af; padding: 30px; text-align: left; position: relative; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+  th { background-color: #f1f5f9; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Exam Result</h2>
+  <input type="text" id="nameInput" placeholder="Student Full Name">
+  <input type="text" id="rollInput" placeholder="Roll Number">
+  <button onclick="getResult()">Get Result</button>
+</div>
+
+<div id="resultBox"></div>
+
+<script>
+function getResult() {
+  const nameVal = document.getElementById("nameInput").value.trim();
+  const rollVal = document.getElementById("rollInput").value.trim();
+  const resBox = document.getElementById("resultBox");
+
+  if(!nameVal || !rollVal) {
+    alert("Please enter both Name and Roll number.");
+    return;
+  }
+
+  resBox.innerHTML = "<p>Fetching record, please wait...</p>";
+
+  // Fetching from your SheetDB API
+  fetch("https://sheetdb.io/api/v1/xisitsxchstg2?sheet=Sheet2")
+  .then(res => res.json())
+  .then(data => {
+    // Finding student with case-insensitive name check
+    const student = data.find(s =>
+      s.Name.toString().toLowerCase() === nameVal.toLowerCase() &&
+      s.Roll.toString() === rollVal
+    );
+
+    if(!student) {
+      resBox.innerHTML = "<h3 style='color:red;'>❌ Record Not Found!<br><small>Check spelling or Roll number.</small></h3>";
+      return;
+    }
+
+    // Logic for marks calculation
+    const total = Number(student.Maths) + Number(student.Science) + Number(student.English);
+    const percent = ((total / 300) * 100).toFixed(2);
+
+    // Displaying the Marksheet
+    resBox.innerHTML = `
+      <div class="marksheet">
+        <h1 style="text-align:center; color:#1e40af; margin-bottom:5px;">ACHIEVE ACADEMY</h1>
+        <h3 style="text-align:center; margin-top:0; color:#475569;">OFFICIAL STATEMENT OF MARKS</h3>
+        <hr>
+        <div style="margin: 20px 0;">
+          <p><b>Student Name:</b> ${student.Name}</p>
+          <p><b>Roll Number:</b> ${student.Roll}</p>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>Subject</th><th>Maximum Marks</th><th>Marks Obtained</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Mathematics</td><td>100</td><td>${student.Maths}</td></tr>
+            <tr><td>Science</td><td>100</td><td>${student.Science}</td></tr>
+            <tr><td>English</td><td>100</td><td>${student.English}</td></tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex; justify-content:space-between; margin-top:20px;">
+          <div>
+            <p><b>Total:</b> ${total}/300</p>
+            <p><b>Percentage:</b> ${percent}%</p>
+            <p><b>Final Grade:</b> <span style="color:#1e40af; font-weight:bold;">${student.Grade}</span></p>
+          </div>
+        </div>
+
+        <div style="margin-top:40px; display:flex; justify-content:space-between; font-style:italic;">
+          <p>Class Teacher</p>
+          <p>Principal Signature</p>
+        </div>
+
+        <button onclick="window.print()" style="background:#475569; width:auto; padding:8px 15px;">Print / Save PDF</button>
+      </div>
+    `;
+  })
+  .catch(err => {
+    resBox.innerHTML = "<p style='color:red;'>Network error. Please try again.</p>";
+    console.error(err);
+  });
+}
+</script>
+
+</body>
+</html>
