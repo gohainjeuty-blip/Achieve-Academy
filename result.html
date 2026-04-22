@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Result</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #eef2f7;
+  text-align: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  max-width: 400px;
+  margin: auto;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+input {
+  width: 90%;
+  padding: 12px;
+  margin: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 12px 20px;
+  background: #1e40af;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#resultBox {
+  margin-top: 30px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container">
+<h2>Examination Result</h2>
+
+
+<input type="text" id="name" placeholder="Enter Name"><br>
+<input type="text" id="roll" placeholder="Enter Roll Number"><br>
+
+<button onclick="getResult()">Get Result</button>
+</div>
+
+<div id="resultBox"></div>
+
+<script>
+function getResult() {
+
+  var nameValue = document.getElementById("Name").value;
+  var rollValue = document.getElementById("Roll").value;
+
+  if(nameValue=="" || rollValue==""){
+    alert("Fill all details");
+    return;
+  }
+
+  fetch("https://sheetdb.io/api/v1/xisitsxchstg2?sheet=Sheet2")
+  .then(res => res.json())
+  .then(data => {
+
+    var student = data.find(s =>
+      s.Name && s.Roll &&
+      s.Name.trim().toLowerCase() === nameValue.trim().toLowerCase() &&
+      s.Roll.toString().trim() === rollValue.trim()
+    );
+
+    if(!student){
+      document.getElementById("resultBox").innerHTML =
+      "document.getElementById("resultBox").innerHTML = `
+<div style="
+  max-width:900px;
+  margin:auto;
+  background:#fff;
+  border:5px solid #1e3a8a;
+  padding:30px;
+  font-family:Arial;
+">
+
+<h1 style="text-align:center; color:#1e3a8a;">
+  GREENFIELD PUBLIC SCHOOL
+</h1>
+<h3 style="text-align:center;">Statement of Marks</h3>
+
+<hr>
+
+<div style="display:flex; justify-content:space-between;">
+  <div>
+    <p><b>Name:</b> ${student.Name}</p>
+    <p><b>Roll:</b> ${student.Roll}</p>
+  </div>
+
+  <img src="https://via.placeholder.com/100"
+       style="border:2px solid #000;">
+</div>
+
+<br>
+
+<table border="1" width="100%" cellpadding="10" style="border-collapse:collapse; text-align:center;">
+<tr style="background:#1e3a8a; color:white;">
+  <th>Subject</th>
+  <th>Marks</th>
+</tr>
+
+<tr><td>Maths</td><td>${student.Maths}</td></tr>
+<tr><td>Science</td><td>${student.Science}</td></tr>
+<tr><td>English</td><td>${student.English}</td></tr>
+
+</table>
+
+<br>
+
+<h3>Total: ${
+  Number(student.Maths)+Number(student.Science)+Number(student.English)
+} / 300</h3>
+
+<h3>Percentage: ${
+  ((Number(student.Maths)+Number(student.Science)+Number(student.English))/300*100).toFixed(2)
+}%</h3>
+
+<h3>Grade: ${student.Grade}</h3>
+
+<br><br>
+
+<div style="display:flex; justify-content:space-between;">
+  <p>Class Teacher</p>
+  <p>Principal</p>
+</div>
+
+<br>
+
+<button onclick="window.print()">Download Marksheet</button>
+
+</div>
+`;
+    document.getElementById("resultBox").innerHTML = `
+      <h2 style="color:green;">Result Found ✅</h2>
+      <p><b>Name:</b> ${student.Name}</p>
+      <p><b>Roll:</b> ${student.Roll}</p>
+      <p><b>Maths:</b> ${student.Maths}</p>
+      <p><b>Science:</b> ${student.Science}</p>
+      <p><b>English:</b> ${student.English}</p>
+      <p><b>Grade:</b> ${student.Grade}</p>
+    `;
+  })
+  .catch(err => {
+    alert("Error: " + err);
+  });
+}
+</script>
+
+</body>
+</html>
